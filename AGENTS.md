@@ -20,27 +20,14 @@ The application is split into two main layers, `backend` and `frontend`, plus st
 
 ### Backend Layering
 
-Backend logic must always flow `controller -> service -> repository`.
+Backend logic must flow `controller -> service -> repository`, unless the active stack file defines a different layered architecture.
 
 - Controllers handle HTTP only: routing, input validation, response schemas, status codes, and error mapping. They contain no business logic and no SQL, and they never call repositories directly.
 - Services hold business logic and orchestration. They depend on repository interfaces, never on concrete database implementations.
 - Repositories contain SQL only and implement an interface. Concrete implementations (for example `Pg*Repository`) receive the database client through the constructor.
 - Build dependencies once in the composition root and inject them; do not instantiate repositories or database clients inside services or controllers.
 
-Base layout:
-
-```
-backend/
-└── src/
-    ├── modules/
-    │   └── <name>/
-    │       ├── <name>.controller   # HTTP boundary: validation, status codes
-    │       ├── <name>.service      # business logic and orchestration
-    │       └── <name>.repository   # persistence: SQL only
-    └── server.ts                   # composition root
-```
-
-Exact file names and shared folders for the active stack are documented in `backend/<stack>.md`.
+Stack-specific module layout and file names are documented in `backend/<stack>.md`.
 
 ## Toolchain
 
