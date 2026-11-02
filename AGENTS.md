@@ -9,30 +9,30 @@ The application is split into two main layers, `backend` and `frontend`, plus st
 
 - Before writing code, read the stack description in `backend/README.md` and `frontend/README.md`. If the relevant file does not describe the stack you need, stop and ask the user.
 - Standalone runnable services (for example, a Telegram bot) go into `apps/`. Only self-contained applications belong there, and each has its own `README.md`.
-- Project documentation and specifications go into `docs/`. The only exceptions are `README.md` and `AGENTS.md` in the repository root, and `backend/README.md` / `frontend/README.md` for stack descriptions.
+- Project documentation and specifications go into `docs/`. The only exceptions are `README.md` and `AGENTS.md` in the repository root, `backend/README.md` / `frontend/README.md` for stack descriptions, and `apps/*/README.md` for standalone apps.
 - Do not add new top-level directories without asking the user.
-- The project is a single Bun workspace rooted at the repository root; all commands are run from there (see [Toolchain](#toolchain)).
-- The project must support basic deployment with Docker: the selected backend stack plus a PostgreSQL database. The database service needs a healthcheck, a named volume for its data, and credentials/ports taken from `.env` and documented in `.env.example`. Schema changes are applied only through migrations, never by editing the database by hand.
-- Formatting and linting of `backend` and `frontend` are enforced by a `pre-commit` hook (lefthook). It must skip `merge` and `rebase` (`skip: [merge, rebase]`).
+- All packages live in a single Bun workspace rooted at the repository root; all commands are run from there (see [Toolchain](#toolchain)).
+- The project must support basic deployment with Docker and a PostgreSQL database. Start with the database service: it needs a healthcheck, a named volume for its data, and credentials/ports taken from `.env` and documented in `.env.example`. Once `backend/` has a Dockerfile, add the backend service to `docker-compose.yml` as well. Schema changes are applied only through migrations, never by editing the database by hand.
+- Formatting and linting of `backend` and `frontend` are enforced by a `pre-commit` hook (lefthook), activated with `bunx lefthook install`. The hook must skip `merge` and `rebase` (`skip: [merge, rebase]`).
 - Back up important data (database dumps, SQL files, and so on) into `backups/`. The directory is gitignored.
 - If the user requests application metrics, use Grafana and Prometheus. Keep their configuration in a separate, opt-in `docker-compose.monitoring.yml` (not started by default) and provisioning files under `apps/monitoring/`.
 
 ## Toolchain
 
-Bun is the runtime, package manager, and test runner. The root `package.json` defines the workspaces (`backend`, `frontend`, `apps/*`) and the shared scripts. Do not add per-layer lockfiles and do not use npm, yarn, or pnpm.
+Bun is the runtime, package manager, and test runner. The root `package.json` defines the Bun workspaces and the shared scripts. Workspaces currently cover `apps/*`; add `backend` and `frontend` to the list once those layers contain their own `package.json`. Commit the root `bun.lock`, and do not add per-layer lockfiles or use npm, yarn, or pnpm.
 
 | Task               | Command                                        |
 | ------------------ | ---------------------------------------------- |
 | Install            | `bun install`                                  |
 | Dev                | `bun run dev`                                  |
 | Build              | `bun run build`                                |
-| Test               | `bun test`                                     |
-| Test with coverage | `bun test --coverage`                          |
+| Test               | `bun run test`                                 |
+| Test with coverage | `bun run test:coverage`                        |
 | Lint               | `bun run lint` (`oxlint`)                      |
 | Format             | `bun run format` (`oxfmt`), check with `bun run format:check` |
 | Typecheck          | `bun run typecheck` (`tsc --noEmit`, TypeScript stacks only) |
 
-If a script is missing, add it to the root `package.json` instead of invoking the tool ad hoc.
+Install git hooks once with `bunx lefthook install`; they are not active in a fresh clone until then. If a script is missing, add it to the root `package.json` instead of invoking the tool ad hoc.
 
 ## Definition of Done
 
@@ -41,10 +41,21 @@ A change is complete only when all of the following hold:
 - The code follows the SOLID and composition rules above.
 - `bun run lint` and `bun run format:check` pass.
 - `bun run typecheck` passes for every TypeScript layer.
-- `bun test` passes, and new or changed logic is covered by tests. Run `bun test --coverage` and report the coverage; do not lower the existing level.
+- `bun run test` passes, and new or changed logic is covered by tests. Run `bun run test:coverage` and report the coverage percentage; it must not be lower than the last reported value.
 - Documentation is updated in the same commit: `docs/`, the relevant layer `README.md`, and the root `README.md` when commands or setup change.
+- The project has been reviewed after the change, as described in [Post-Change Analysis](#post-change-analysis).
 - No secrets, dependencies, build output, coverage reports, or database dumps are committed.
 - The commit message follows Conventional Commits.
+
+## Post-Change Analysis
+
+After every change or addition, review the project before committing:
+
+- Re-read the diff and its call sites; remove dead code, unused imports and dependencies, leftover `TODO`/`FIXME` markers, and debug output.
+- Check that references are still valid: paths in this file, links in `README.md` and `docs/`, scripts in `package.json`, variables in `.env.example`, and service names in `docker-compose.yml`.
+- Confirm the change did not break adjacent behavior or contradict existing conventions, and update this file when a rule or workflow changes.
+- Run the checks from [Definition of Done](#definition-of-done).
+- Summarize what changed, what was verified, and any follow-up work.
 
 ## Security
 
@@ -54,9 +65,8 @@ A change is complete only when all of the following hold:
 
 ## Git
 
-1. Initialize a new project with `git init`.
-2. Commit completed changes, new files, and features. Do not commit code with failing tests, lint, or typecheck.
-3. Use Conventional Commits, `<type>(<scope>): <subject>`.
+1. Commit completed changes, new files, and features. Do not commit code with failing tests, lint, or typecheck.
+2. Use Conventional Commits, `<type>(<scope>): <subject>`.
 
    Examples:
    - `feat(backend): add user service`
@@ -65,17 +75,19 @@ A change is complete only when all of the following hold:
 
 ## Bootstrap Checklist
 
-The tree below is the target layout. A new project is ready only when every item is checked.
+Use this list when starting a new project from this template. Items already present in this repository are checked.
 
-- [ ] `git init`
+- [x] `git init`
+- [x] `.gitignore`
 - [ ] root `package.json` with Bun workspaces and the scripts from [Toolchain](#toolchain)
-- [ ] `.gitignore`
 - [ ] `backend/README.md` and `frontend/README.md` describing the selected stacks
-- [ ] `docker-compose.yml` with the backend stack and PostgreSQL
-- [ ] `lefthook.yml`: `pre-commit` formatting/linting, `commit-msg` Conventional Commits validation, `skip: [merge, rebase]`
 - [ ] `.env.example`
+- [ ] `docker-compose.yml` with PostgreSQL
+- [ ] backend service and `backend/Dockerfile` added to `docker-compose.yml` once the layer is scaffolded
+- [ ] `lefthook.yml` (`pre-commit` formatting/linting, `commit-msg` Conventional Commits validation, `skip: [merge, rebase]`) and `bunx lefthook install`
 - [ ] `README.md`
 - [ ] `docs/ROADMAP.md`
+- [ ] when metrics are requested: `docker-compose.monitoring.yml` and provisioning under `apps/monitoring/`
 
 ### Project Tree
 
