@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+.bun/
+
+# Build output
+dist/
+dist-ssr/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Tests
+coverage/
+
+# Logs
+*.log
+bun-debug.log*
+
+# Editors and OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+
+# Backups and database dumps
+backups/
+*.sql
+*.dump
+*.sql.gz
+
+# Monitoring runtime data
+apps/monitoring/grafana/data/
+apps/monitoring/prometheus/data/
