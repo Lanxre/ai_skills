@@ -27,6 +27,21 @@ Backend logic must always flow `controller -> service -> repository`.
 - Repositories contain SQL only and implement an interface. Concrete implementations (for example `Pg*Repository`) receive the database client through the constructor.
 - Build dependencies once in the composition root and inject them; do not instantiate repositories or database clients inside services or controllers.
 
+Base layout:
+
+```
+backend/
+└── src/
+    ├── modules/
+    │   └── <name>/
+    │       ├── <name>.controller   # HTTP boundary: validation, status codes
+    │       ├── <name>.service      # business logic and orchestration
+    │       └── <name>.repository   # persistence: SQL only
+    └── server.ts                   # composition root
+```
+
+Exact file names and shared folders for the active stack are documented in `backend/<stack>.md`.
+
 ## Toolchain
 
 Bun is the runtime, package manager, and test runner. The root `package.json` defines the Bun workspaces and the shared scripts. Workspaces currently cover `apps/*`; add `backend` and `frontend` to the list once those layers contain their own `package.json`. Commit the root `bun.lock`, and do not add per-layer lockfiles or use npm, yarn, or pnpm.
