@@ -13,9 +13,8 @@ Stack: TypeScript on Nuxt 4 (Vue 3) with Tailwind CSS 4, built and served with B
 | Utilities     | `@vueuse/nuxt`                     | Browser APIs, `useLocalStorage`, event helpers                   |
 | Styling       | `tailwindcss`, `@tailwindcss/vite` | Utility-first CSS, CSS-first Tailwind 4 configuration            |
 | UI kit        | `@kyokusu-ui/vue`                  | Shared Kyokusu components (notifications, separators, and so on) |
-| Icons         | `@nuxt/icon`                       | Iconify icons (`ph:*`, `lucide:*`) with a local server bundle    |
+| Icons         | `@nuxt/icon`                       | Iconify icons, `ph` first, with a local server bundle            |
 | Theme         | `@nuxtjs/color-mode`               | Class-based light and dark themes                                |
-| Charts        | `chart.js`, `vue-chartjs`          | Statistics charts                                                |
 | HTTP          | Nuxt `$fetch` / `useFetch`         | API calls through `ofetch`                                       |
 | Lint / format | `oxlint`, `oxfmt`                  | Linting and formatting, pinned at the workspace root             |
 
@@ -31,11 +30,11 @@ Application (installed during the build and bundled by Nuxt):
 - `@vueuse/nuxt`
 - `@kyokusu-ui/vue`
 - `@nuxt/icon`
+- `@iconify-json/ph` — primary icon collection
+- `@iconify-json/lucide` — fallback only
 - `@nuxtjs/color-mode`
 - `tailwindcss`
 - `@tailwindcss/vite`
-- `chart.js`
-- `vue-chartjs`
 
 Development (tooling only):
 
@@ -51,7 +50,6 @@ Rules:
 - Do not add a second state library. Use Pinia for shared state and `useState` for SSR-safe request state.
 - Do not add a component library besides `@kyokusu-ui/vue` without asking.
 - Do not add another CSS framework or a CSS-in-JS runtime. Tailwind utilities plus the global stylesheet are the styling layer.
-- `chart.js` is the only charting dependency; do not add a wrapper library on top of `vue-chartjs`.
 - Tailwind 4 is wired through `@tailwindcss/vite` and `@import 'tailwindcss'` in `app/assets/css/global.css`. Do not add the `@nuxtjs/tailwindcss` module; if it is present in `package.json`, remove it.
 
 ## Configuration
@@ -350,7 +348,7 @@ A screen is not done until it passes every section below.
 
 ### Icons
 
-- Every emoji used as an icon or as decoration in a label becomes a line icon from one set. Use the set the project already has; the reference uses `ph` for interface icons, with `lucide` installed as a fallback. Do not mix sets on one surface.
+- Every emoji used as an icon or as decoration in a label becomes a line icon. Use `ph` first. Reach for `lucide` only when `ph` has no suitable icon, and never mix sets on one surface.
 - One size and one stroke everywhere: 16 or 18px with a 1.5 stroke.
 - Icons take the color of their text role, usually secondary or muted. They never get their own colors.
 - The icon box has the same width in every row and the gap to the label is fixed at 8 or 10, so labels align.
