@@ -31,6 +31,22 @@ Development:
 
 Do not add a separate Redis client (`redis`, `ioredis`, and so on): use the client built into Bun.
 
+## Module Structure
+
+Each backend module lives in `src/modules/<name>/`:
+
+```
+<name>.controller.ts   # Elysia routes: validation, response schemas, status codes
+<name>.service.ts      # business logic; depends on the repository interface
+<name>.repository.ts   # SQL only: <Name>Repository interface + Pg<Name>Repository
+<name>.model.ts        # Elysia schemas and derived TypeScript types
+```
+
+- Controllers are factories: `create<Name>Controller(service)` returns an Elysia instance.
+- Services receive their dependencies through the constructor: `new <Name>Service(repository, ...)`.
+- Repositories receive the PostgreSQL client through the constructor: `new Pg<Name>Repository(sql)`.
+- Wire repositories, services, and controllers once in the composition root (`src/server.ts`). Do not create repositories inside services or controllers.
+
 ## Tooling
 
 - Runtime and package manager: Bun (workspace root: `../package.json`)

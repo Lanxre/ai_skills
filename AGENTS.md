@@ -18,6 +18,15 @@ The application is split into two main layers, `backend` and `frontend`, plus st
 - Back up important data (database dumps, SQL files, and so on) into `backups/`. The directory is gitignored.
 - If the user requests application metrics, use Grafana and Prometheus. Keep their configuration in a separate, opt-in `docker-compose.monitoring.yml` (not started by default) and provisioning files under `apps/monitoring/`.
 
+### Backend Layering
+
+Backend logic must always flow `controller -> service -> repository`.
+
+- Controllers handle HTTP only: routing, input validation, response schemas, status codes, and error mapping. They contain no business logic and no SQL, and they never call repositories directly.
+- Services hold business logic and orchestration. They depend on repository interfaces, never on concrete database implementations.
+- Repositories contain SQL only and implement an interface. Concrete implementations (for example `Pg*Repository`) receive the database client through the constructor.
+- Build dependencies once in the composition root and inject them; do not instantiate repositories or database clients inside services or controllers.
+
 ## Toolchain
 
 Bun is the runtime, package manager, and test runner. The root `package.json` defines the Bun workspaces and the shared scripts. Workspaces currently cover `apps/*`; add `backend` and `frontend` to the list once those layers contain their own `package.json`. Commit the root `bun.lock`, and do not add per-layer lockfiles or use npm, yarn, or pnpm.
@@ -40,6 +49,7 @@ Install git hooks once with `bunx lefthook install`; they are not active in a fr
 A change is complete only when all of the following hold:
 
 - The code follows the SOLID and composition rules above.
+- The backend follows the `controller -> service -> repository` layering described in [Backend Layering](#backend-layering).
 - `bun run lint` and `bun run format:check` pass.
 - `bun run typecheck` passes for every TypeScript layer.
 - `bun run test` passes, and new or changed logic is covered by tests. Run `bun run test:coverage` and report the coverage percentage; it must not be lower than the last reported value.
