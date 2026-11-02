@@ -2,6 +2,7 @@
 
 1. Follow the SOLID principles. Concretely: keep domain logic out of controllers and UI components, depend on interfaces rather than implementations, and inject dependencies instead of constructing them inline.
 2. Prefer composition (aggregation) and delegation over inheritance. Do not build deep inheritance chains.
+3. After every change or addition, analyze the project as described in [Post-Change Analysis](#post-change-analysis) before finishing or committing.
 
 ## Architecture
 
