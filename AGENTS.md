@@ -8,9 +8,9 @@
 
 The application is split into two main layers, `backend` and `frontend`, plus standalone services.
 
-- Before writing code, read the stack description in `backend/README.md` and `frontend/README.md`. If the relevant file does not describe the stack you need, stop and ask the user.
+- Before writing code, read the stack description for the active stack. Keep one file per stack, named after the stack: `backend/<stack>.md` and `frontend/<stack>.md` (for example `backend/ts.md`, `frontend/vue.md`). If no file describes the stack you need, stop and ask the user.
 - Standalone runnable services (for example, a Telegram bot) go into `apps/`. Only self-contained applications belong there, and each has its own `README.md`.
-- Project documentation and specifications go into `docs/`. The only exceptions are `README.md` and `AGENTS.md` in the repository root, `backend/README.md` / `frontend/README.md` for stack descriptions, and `apps/*/README.md` for standalone apps.
+- Project documentation and specifications go into `docs/`. The only exceptions are `README.md` and `AGENTS.md` in the repository root, `backend/*.md` / `frontend/*.md` for stack descriptions, and `apps/*/README.md` for standalone apps.
 - Do not add new top-level directories without asking the user.
 - All packages live in a single Bun workspace rooted at the repository root; all commands are run from there (see [Toolchain](#toolchain)).
 - The project must support basic deployment with Docker and a PostgreSQL database. Start with the database service: it needs a healthcheck, a named volume for its data, and credentials/ports taken from `.env` and documented in `.env.example`. Once `backend/` has a Dockerfile, add the backend service to `docker-compose.yml` as well. Schema changes are applied only through migrations, never by editing the database by hand.
@@ -43,7 +43,7 @@ A change is complete only when all of the following hold:
 - `bun run lint` and `bun run format:check` pass.
 - `bun run typecheck` passes for every TypeScript layer.
 - `bun run test` passes, and new or changed logic is covered by tests. Run `bun run test:coverage` and report the coverage percentage; it must not be lower than the last reported value.
-- Documentation is updated in the same commit: `docs/`, the relevant layer `README.md`, and the root `README.md` when commands or setup change.
+- Documentation is updated in the same commit: `docs/`, the relevant stack file (`backend/<stack>.md` or `frontend/<stack>.md`), and the root `README.md` when commands or setup change.
 - The project has been reviewed after the change, as described in [Post-Change Analysis](#post-change-analysis).
 - No secrets, dependencies, build output, coverage reports, or database dumps are committed.
 - The commit message follows Conventional Commits.
@@ -81,7 +81,7 @@ Use this list when starting a new project from this template. Items already pres
 - [x] `git init`
 - [x] `.gitignore`
 - [ ] root `package.json` with Bun workspaces and the scripts from [Toolchain](#toolchain)
-- [ ] `backend/README.md` and `frontend/README.md` describing the selected stacks
+- [ ] `backend/<stack>.md` and `frontend/<stack>.md` describing each selected stack (one file per stack)
 - [ ] `.env.example`
 - [ ] `docker-compose.yml` with PostgreSQL
 - [ ] backend service and `backend/Dockerfile` added to `docker-compose.yml` once the layer is scaffolded
@@ -95,9 +95,9 @@ Use this list when starting a new project from this template. Items already pres
 ```
 ProjectName/
 ├── backend/
-│   └── README.md                 # backend stack description
+│   └── ts.md                     # backend stack description (one file per stack)
 ├── frontend/
-│   └── README.md                 # frontend stack description
+│   └── vue.md                    # frontend stack description (one file per stack)
 ├── apps/
 │   └── monitoring/
 │       ├── grafana/
